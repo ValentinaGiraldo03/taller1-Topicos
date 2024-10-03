@@ -193,20 +193,14 @@ def vacancy_listcompany(request):
     })
 
 def upload_vacancy(request):
-    vacancy_service = VacancyService()
-    vacancy_service.attach(EmailNotifier())
-    vacancy_service.attach(LogNotifier())
-
-    if request.method == "POST":
-        form = VacancyForm(request.POST, request.FILES)
-        if form.is_valid():
-            vacancy_service.create_vacancy(form.cleaned_data)
-            return redirect('vacancy_listcompany')
-    else:
-        form = VacancyForm()
-    return render(request, 'TalentSwapApp/upload_vacancy.html', {'form': form})
-
-    
+        if request.method == "POST":
+            form = VacancyForm(request.POST, request.FILES)
+            if form.is_valid():
+                form.save()
+                return redirect('vacancy_listcompany')
+        else:
+            form = VacancyForm()
+        return render(request, 'TalentSwapApp/upload_vacancy.html', {'form': form})
 
 
 def vacancy_detailemployee(request, id):

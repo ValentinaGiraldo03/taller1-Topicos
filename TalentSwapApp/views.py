@@ -1,3 +1,16 @@
+# Created abstractions (services): I have created a services.py file to encapsulate the logic related to the models.
+# This decouples the views from direct model access and allows for easy modification or testing of the logic.
+
+# Views dependent on abstractions: The views now utilize UserService and VacancyService instead of directly accessing the models,
+# adhering to the principle of dependency inversion.
+
+# Reusability: The logic for user creation and vacancy searching is now centralized in the services,
+# making it easier to reuse in other parts of the application.
+
+# Ease of testing: With the dependencies inverted, unit tests can be conducted more easily,
+# as the services can be mocked or tested in isolation.
+
+
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.shortcuts import render, redirect
@@ -10,7 +23,8 @@ from django.contrib.auth.decorators import login_required
 
 #Modelos y funciones de autenticación
 from django.contrib.auth.models import auth
-from django.contrib.auth import authenticate, login, logout
+from .services import UserService, VacancyService
+from django.contrib.auth import authenticate
 
 #Almacenar y gestionar archivos 
 from django.core.files.storage import FileSystemStorage
@@ -45,47 +59,43 @@ def register(request):
         user_type_form = UserTypeForm()
     return render(request, 'TalentSwapApp/register.html', {'user_type_form': user_type_form})
 
+from django.contrib import messages
+
+
 def register_employee(request):
     if request.method == 'POST':
         form = EmployeeRegistrationForm(request.POST)
         if form.is_valid():
-            employee_name = form.cleaned_data['employee_name']
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
-            information = form.cleaned_data['information']
-            interests = form.cleaned_data['interests']
-            work_experience = form.cleaned_data['work_experience']
-            user = Employee.objects.create_user(username=email, email=email, password=password, information=information)
-            user.employee_name = employee_name
-            user.interests = interests
-            user.work_experience = work_experience
-            user.save()
+            employee, error = UserService.register_employee(form.cleaned_data)
+            if error:
+                messages.error(request, error)
+                return redirect('register_employee')
             messages.success(request, '¡Empleado registrado correctamente!')
-            return redirect('login')  # Redirigir a la página de dashboard del empleado
+            return redirect('login')
     else:
         form = EmployeeRegistrationForm()
     return render(request, 'TalentSwapApp/register_employee.html', {'form': form})
+
 
 def register_company(request):
     if request.method == 'POST':
         form = CompanyRegistrationForm(request.POST)
         if form.is_valid():
-            company_name = form.cleaned_data['company_name']
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
-            information = form.cleaned_data['information']
-            company_type = form.cleaned_data['company_type']
-            user = Company.objects.create_user(username=email, email=email, password=password, information=information)
-            user.company_name = company_name
-            user.company_type = company_type
-            user.save()
+            company = UserService.register_company(form.cleaned_data)
             messages.success(request, '¡Compañía registrada correctamente!')
-            return redirect('login')  # Redirigir a la página de dashboard de la compañía
+            return redirect('login')
     else:
         form = CompanyRegistrationForm()
     return render(request, 'TalentSwapApp/register_company.html', {'form': form})
 
 
+def vacancy_listemployee(request):
+    searchTerm = request.GET.get('buscarVacante')
+    vacancies = VacancyService.search_vacancies(searchTerm)
+    return render(request, 'TalentSwapApp/vacancy_listemployee.html', {
+        'vacancies': vacancies,
+        'searchTerm': searchTerm
+    })
 
 
 def dashboard_employee(request):
@@ -183,14 +193,19 @@ def vacancy_listcompany(request):
     })
 
 def upload_vacancy(request):
-        if request.method == "POST":
-            form = VacancyForm(request.POST, request.FILES)
-            if form.is_valid():
-                form.save()
-                return redirect('vacancy_listcompany')
-        else:
-            form = VacancyForm()
-        return render(request, 'TalentSwapApp/upload_vacancy.html', {'form': form})
+    vacancy_service = VacancyService()
+    vacancy_service.attach(EmailNotifier())
+    vacancy_service.attach(LogNotifier())
+
+    if request.method == "POST":
+        form = VacancyForm(request.POST, request.FILES)
+        if form.is_valid():
+            vacancy_service.create_vacancy(form.cleaned_data)
+            return redirect('vacancy_listcompany')
+    else:
+        form = VacancyForm()
+    return render(request, 'TalentSwapApp/upload_vacancy.html', {'form': form})
+
     
 
 

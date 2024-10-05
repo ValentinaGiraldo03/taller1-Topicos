@@ -1,3 +1,6 @@
+# Requested changes for Software Development Topics Workshop 01
+Inside the SINGLETON.txt file is the explanation of the choice of python singleton design pattern for better handling of instances.
+
 # Usability
 
 ## Completed Aspects

@@ -1,0 +1,14 @@
+Implementamos el patrón Singleton en las clases UserService y VacancyService. Estas clases encapsulan la lógica relacionada con usuarios y vacantes, y al aplicar Singleton garantizamos que solo exista una instancia de estas clases a lo largo del ciclo de vida de tu aplicación. Esto tiene varias implicaciones y beneficios:
+
+1. Garantiza una única instancia
+Al aplicar Singleton, garantizamos que solo habrá una única instancia de UserService y VacancyService. Esto es útil si las instancias de estas clases manejan recursos compartidos o tienen un estado que debe mantenerse a través de toda la aplicación.
+2. Facilita el acceso global
+Una vez que se ha creado la instancia, se puede acceder a ella desde cualquier parte del código sin necesidad de volver a crearla. Esto simplifica la arquitectura porque todas las partes de la aplicación pueden compartir la misma instancia de UserService o VacancyService sin tener que preocuparnos por la creación de nuevos objetos.
+3. Optimización de recursos
+Al tener una única instancia de las clases, se evita la creación innecesaria de múltiples objetos. Evitando el uso excesivo de memoria y mejorando el rendimiento.
+4. Fácil de probar y mantener
+El patrón Singleton facilita la prueba unitaria, ya que puedes simular o controlar el acceso a la instancia única en las pruebas.
+
+¿Por qué es importante en este caso?
+Mantenimiento del estado global: Si en algún momento necesitamos que la aplicación mantenga un estado compartido o reutilice recursos comunes, el patrón Singleton nos permite controlar que solo exista una instancia en memoria que maneje ese estado.
+Evitar la duplicación innecesaria de objetos: Sin Singleton, podríamos estar creando instancias adicionales de UserService o VacancyService cada vez que se acceda a ellas, lo cual no es eficiente. Con Singleton, controlamos que solo haya una instancia que maneje todas las operaciones.
